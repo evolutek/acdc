@@ -1,9 +1,9 @@
 # ---------------
 # Author(s) : Kapwiing
 # ---------------
-ScriptVersion = "0.1"
+ScriptVersion = "0.2"
 # ---------------
-
+print(f"Version : {ScriptVersion}\n\n")
 # ----[INFO]----
 # This script is meant to read the inputs of the controller and possibly
 # inpterpret them
@@ -18,8 +18,6 @@ from inputs import get_gamepad
 from inputs import UnknownEventCode
 from time import sleep
 from inputs import DeviceManager
-
-devices = DeviceManager()
 
 for device in devices:
     print(device)
