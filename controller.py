@@ -17,13 +17,24 @@ from inputs import devices
 from inputs import get_gamepad
 from inputs import UnknownEventCode
 from time import sleep
-from inputs import DeviceManager
 
 for device in devices:
     print(device)
 
 # Get the gamepad object
-gamepad = devices.gamepads[0]
+try:
+    gamepad = devices.gamepads[0]
+except:
+    print("No gamepad detected")
+    exit(84)
+
+def send_turn_info(value:int):
+    print(f"Turning {value}")
+    # TODO : Set servo to value
+
+def accelerate(value:int):
+    print(f"Accelerating {value}")
+    # TODO : Set motor to value
 
 def analyse_input(event):
     if (event.code == "BTN_MODE" and event.state == 1): # Exit the program if the HOME button is pressed
@@ -33,6 +44,14 @@ def analyse_input(event):
         # First 2 parameters are the side of the controller.
         # The last one is the duration of the vibration in miliseconds.
         gamepad.set_vibration(1, 1, 300)
+    if (event.code == "ABS_X"): # Turn the car
+        send_turn_info(event.state)
+    if (event.code == "ABS_RZ"): # Accelerate the car
+        accelerate(event.state)
+    if (event.ev_type != "Sync"): # Just to avoid the print of delimiter events
+        print(f"TYPE : {event.ev_type}")
+        print(f"CODE : {event.code}")
+        print(f"STATE : {event.state}")
 
 if (__name__ == "__main__"):
     while True:
@@ -42,12 +61,7 @@ if (__name__ == "__main__"):
         except UnknownEventCode: # If the get_gamepad() func returns an error (wich he will), this prevents a useless crash
             events = []
         for event in events:
-            if (event.ev_type != "Sync"): # Just to avoid the print of delimiter events
-                print(f"TYPE : {event.ev_type}")
-                print(f"CODE : {event.code}")
-                print(f"STATE : {event.state}")
             analyse_input(event)
-
 
 
 # -------------------------
