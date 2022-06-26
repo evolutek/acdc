@@ -39,7 +39,8 @@ unsigned long last_status_pin_toggle;
 #define PMW1_PROP 10
 uint8_t propulsionMaxSpeed = 100; 
 
-#define BATT_PIN A2;
+#define BATT_PIN A2
+#define BATT_COEFF 2
 
 bool wasSetup = false;
 
@@ -110,6 +111,15 @@ void process_command(void)
   if (frame[command] == set_max_speed)
   {
     propulsionMaxSpeed = frame[data + 3] & 0x64;
+  }
+
+  if (frame[command] == get_batt_voltage)
+  {
+    uint8_t voltage = max(map(analogRead(BATT_PIN), 0, 4095, 0, 5) * BATT_COEFF, 20);
+    Serial.print(FRAME_START_FLAG);
+    Serial.print(_setup);
+    Serial.print(0x01);
+    Serial.println(voltage);
   }
 }
 
