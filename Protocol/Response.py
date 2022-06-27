@@ -3,6 +3,7 @@ from enum import IntEnum
 
 class CmdEnum(IntEnum):
     COMMAND_FLAG = 0x42
+    NONE = -42
 
     # list command
     RESET = 0x00,
@@ -22,3 +23,5 @@ class CmdEnum(IntEnum):
 class Response:
     def __init__(self, data):
         self.data = data
+        self.type_of_command: CmdEnum = CmdEnum.NONE
+
