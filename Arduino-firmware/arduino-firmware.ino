@@ -1,10 +1,10 @@
-#include <Adafruit_SleepyDog.h>
-
 #define SERIAL_SPEED 115200
 #define SERIAL_TIMEOUT 100
+#define RESET_TIMEOUT 500
 char frame[32];
 unsigned short frame_index = 0;
 unsigned long last_byte_received;
+unsigned long last_command_received;
 
 #define FRAME_START_FLAG 0x42
 
@@ -40,6 +40,12 @@ unsigned long last_status_pin_toggle;
 #define RRS_DIRECT 0.15
 #define CURRENT_LIMIT_DIRECT 2.5
 
+enum direct_e {
+  center = 0x00,
+  left = 0x01,
+  right = 0x02
+};
+
 #define PMW2_PROP 9
 #define PMW1_PROP 10
 #define LIMIT_PORT_PROP A0
@@ -59,11 +65,25 @@ void setMotorCurrentLimit(bool isDirection, float current)
   analogWrite((isDirection ? LIMIT_PORT_DIRECT : LIMIT_PORT_PROP), min((vRef / PDT_GAIN) * 51, 255));
 }
 
+void setDirectionAngle(enum direct_e direction)
+{
+  uint8_t speed = (direction == center ? 0 : 180);
+  analogWrite(PMW1_DIRECT, (direction == right ? speed : 0));
+  analogWrite(PMW2_DIRECT, (direction == left ? speed : 0));
+}
+
 void setPropulsionSpeed(uint8_t reverse, uint8_t speed)
 {
   uint8_t newSpeed = speed / 100.0f * propulsionMaxSpeed;
   analogWrite((reverse ? PMW1_PROP : PMW2_PROP), map(newSpeed, 0, 100, 0, 255));
   analogWrite((reverse ? PMW2_PROP : PMW1_PROP), 0);
+}
+
+void resetCommands()
+{
+  Serial.println("Resetting");
+  setDirectionAngle(center);
+  setPropulsionSpeed(false, 0);
 }
 
 void setup()
@@ -86,9 +106,6 @@ void setup()
   pinMode(LIMIT_PORT_PROP, OUTPUT);
   digitalWrite(LIMIT_PORT_PROP, HIGH);
   //setMotorCurrentLimit(false, 2.5);
-  setPropulsionSpeed(false, 0);
-  
-  //Watchdog.enable(4000);
 }
 
 void process_command(void)
@@ -96,17 +113,19 @@ void process_command(void)
   if (frame[flag] != FRAME_START_FLAG || frame[command] > set_max_speed)
     return;
 
-  Watchdog.reset();
+  Serial.println((int)frame[command]);
 
   if (frame[command] == reset)
   {
-    Watchdog.disable();
-    Watchdog.enable(15);
-    while (true);;
+    wasSetup = false;
+    resetCommands();
   }
 
   if (frame[command] == _setup)
   {
+    if (frame[size] < 4)
+      return;
+
     wasSetup = true;
     propulsionMaxSpeed = frame[data + 3] & 0x64;
 
@@ -115,23 +134,40 @@ void process_command(void)
     Serial.println(0x00);
   }
 
-  //if (!wasSetup)
-  //  return;
+  Serial.print("Received command :");
+
+  if (!wasSetup)
+    return;
+
+  last_command_received = millis();
 
   if (frame[command] == set_prop_speed)
   {
+    if (frame[size] < 1)
+      return;
+
     uint8_t reverse = (frame[data] >> 8) & 0x01;
     uint8_t speed = frame[data] & 0x7F;
     setPropulsionSpeed(reverse, speed);    
   }
 
+  if (frame[command] == set_direct_angle)
+  {
+    if (frame[size] < 1 || frame[data] > right)
+      return;
+
+    setDirectionAngle(frame[data]);
+  }
+
   // TODO :
-  // - set direction angle
   // - set color
 
   if (frame[command] == set_max_speed)
   {
-    propulsionMaxSpeed = frame[data + 3] & 0x64;
+    if (frame[data] < 1 || frame[data] > 100)
+      return;
+
+    propulsionMaxSpeed = frame[data] & 0x64;
   }
 
   if (frame[command] == get_batt_voltage)
@@ -152,6 +188,12 @@ void loop()
     status_pin_state = !status_pin_state;
     digitalWrite(STATUS_PIN, status_pin_state);
     last_status_pin_toggle = millis();
+  }
+
+  if (wasSetup && millis() - last_command_received > RESET_TIMEOUT)
+  {
+    wasSetup = false;
+    resetCommands();
   }
 
   if (frame_index != 0 && millis() - last_byte_received > SERIAL_TIMEOUT)
