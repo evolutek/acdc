@@ -44,12 +44,12 @@ class API:
         response = None
         if msg == CMD.RESET:
             self.reset()
-            response = Response(self.serial.readlines())
+            response = Response(self.serial.readline())
         elif msg == CMD.SETUP:
             self.setup()
-            response = Response(self.serial.readlines())
+            response = Response(self.serial.readline())
         elif msg == CMD.BATTERIE:
             self.get_battery()
-            response = Response(self.serial.readlines())
+            response = Response(self.serial.readline())
         return response
 
