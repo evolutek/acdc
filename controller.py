@@ -1,7 +1,7 @@
 # ---------------
 # Author(s) : Kapwiing
 # ---------------
-ScriptVersion = "0.2"
+ScriptVersion = "0.3"
 # ---------------
 print(f"Version : {ScriptVersion}\n\n")
 # ----[INFO]----
