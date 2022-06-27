@@ -27,7 +27,7 @@ enum command_e {
 };
 
 #define STATUS_PIN 2
-#define STATUS_TOGGLE_DELAY_BEFORE_RESET 250
+#define STATUS_TOGGLE_DELAY_BEFORE_RESET 100
 #define STATUS_TOGGLE_DELAY 500
 bool status_pin_state = false;
 unsigned long last_status_pin_toggle;
@@ -62,8 +62,8 @@ void setMotorCurrentLimit(bool isDirection, float current)
 void setPropulsionSpeed(uint8_t reverse, uint8_t speed)
 {
   uint8_t newSpeed = speed / 100.0f * propulsionMaxSpeed;
-  analogWrite((reverse ? PMW2_PROP : PMW1_PROP), map(newSpeed, 0, 100, 0, 255));
-  analogWrite((reverse ? PMW1_PROP : PMW2_PROP), 0);
+  analogWrite((reverse ? PMW1_PROP : PMW2_PROP), map(newSpeed, 0, 100, 0, 255));
+  analogWrite((reverse ? PMW2_PROP : PMW1_PROP), 0);
 }
 
 void setup()
@@ -86,7 +86,7 @@ void setup()
   pinMode(LIMIT_PORT_PROP, OUTPUT);
   digitalWrite(LIMIT_PORT_PROP, HIGH);
   //setMotorCurrentLimit(false, 2.5);
-  setPropulsionSpeed(true, 0);
+  setPropulsionSpeed(false, 0);
   
   //Watchdog.enable(4000);
 }
@@ -115,8 +115,8 @@ void process_command(void)
     Serial.println(0x00);
   }
 
-  if (!wasSetup)
-    return;
+  //if (!wasSetup)
+  //  return;
 
   if (frame[command] == set_prop_speed)
   {
@@ -136,7 +136,7 @@ void process_command(void)
 
   if (frame[command] == get_batt_voltage)
   {
-    uint8_t voltage = min(map(analogRead(BATT_PIN), 0, 4095, 0, 5) * BATT_COEFF, 20);
+    uint8_t voltage = min((analogRead(BATT_PIN) / 1024.0 * 50.0) * BATT_COEFF, 200);
     Serial.print(FRAME_START_FLAG);
     Serial.print(_setup);
     Serial.print(0x01);
