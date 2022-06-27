@@ -28,31 +28,42 @@ except:
     print("No gamepad detected")
     exit(84)
 
-def send_turn_info(value:int):
-    print(f"Turning {value}")
+def btn_turn(value:int):
+    # print(f"Turning {value}")
+    print("heeeeelllllooo")
     # TODO : Set servo to value
 
-def accelerate(value:int):
+def btn_accelerate(value:int):
     print(f"Accelerating {value}")
     # TODO : Set motor to value
 
+def event_start(event):
+    print("je vais me start")
+
+def btn_mode(event):
+    print("Exiting Program ...")
+    exit(0)
+
 def analyse_input(event):
-    if (event.code == "BTN_MODE" and event.state == 1): # Exit the program if the HOME button is pressed
-        print("Exiting Program ...")
-        exit(0)
+    func = {"BTN_START": event_start, "BTN_MODE": btn_mode, "ABS_HAT0X": btn_turn, "ABS_HAT0Y": btn_accelerate}
+
+    if event.code in func and event.state == 1: # Exit the program if the HOME button is pressed
+        func[event.code]()
+    elif event.ev_type != "Sync": # Just to avoid the print of delimiter events
+        print(f"TYPE : {event.ev_type}")
+        print(f"CODE : {event.code}")
+        print(f"STATE : {event.state}")
     # REMOVED : Memory error on raspi0
     # if (event.code == "BTN_SOUTH" and event.state == 1): # A simple vibration test
     #     # First 2 parameters are the side of the controller.
     #     # The last one is the duration of the vibration in miliseconds.
     #     gamepad.set_vibration(1, 1, 300)
-    if (event.code == "ABS_X"): # Turn the car
-        send_turn_info(event.state)
-    if (event.code == "ABS_RZ"): # Accelerate the car
-        accelerate(event.state)
-    if (event.ev_type != "Sync"): # Just to avoid the print of delimiter events
-        print(f"TYPE : {event.ev_type}")
-        print(f"CODE : {event.code}")
-        print(f"STATE : {event.state}")
+    # if event.code == "BTN_START":
+    #     print("je suis start")
+    # elif (event.code == "ABS_X"): # Turn the car
+    #     btn_turn(event.state)
+    # elif (event.code == "ABS_RZ"): # Accelerate the car
+    #     accelerate(event.state)
 
 if (__name__ == "__main__"):
     while True:

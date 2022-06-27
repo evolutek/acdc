@@ -34,7 +34,7 @@ class API:
 
     def ping(self):
         self.packet.append(CmdEnum.COMMAND_FLAG)
-        self.packet.append(CmdEnum.SETUP)  # id command
+        self.packet.append(CmdEnum.PING)  # id command
         self.packet.append(0x00)  # 0x00 == 0 parametre
         self.serial.write(self.packet)
         self.packet = bytearray()
