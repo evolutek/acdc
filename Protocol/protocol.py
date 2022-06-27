@@ -1,16 +1,6 @@
 import serial
 from time import sleep
-from Response import Response
-from enum import IntEnum
-
-class CMD(IntEnum):
-    COMMAND_FLAG = 0x42
-
-    # list command
-    RESET = 0x00,
-    SETUP = 0x01,
-    PING = 0x02,
-    BATTERIE = 0x07,
+from Response import Response, CMD
 
 
 class API:
@@ -61,6 +51,5 @@ class API:
         elif msg == CMD.BATTERIE:
             self.get_battery()
             response = Response(self.serial.readlines())
-
         return response
 
