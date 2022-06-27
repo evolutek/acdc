@@ -47,7 +47,7 @@ class API:
         elif msg == CmdEnum.SETUP:
             self.setup()
             response = Response(self.serial.readline())
-        elif msg == CmdEnum.BATTERIE:
+        elif msg == CmdEnum.BATTERy:
             self.get_battery()
             response = Response(self.serial.readline())
         elif msg == CmdEnum.PING:
