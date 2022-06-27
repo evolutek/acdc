@@ -40,10 +40,11 @@ def analyse_input(event):
     if (event.code == "BTN_MODE" and event.state == 1): # Exit the program if the HOME button is pressed
         print("Exiting Program ...")
         exit(0)
-    if (event.code == "BTN_SOUTH" and event.state == 1): # A simple vibration test
-        # First 2 parameters are the side of the controller.
-        # The last one is the duration of the vibration in miliseconds.
-        gamepad.set_vibration(1, 1, 300)
+    # REMOVED : Memory error on raspi0
+    # if (event.code == "BTN_SOUTH" and event.state == 1): # A simple vibration test
+    #     # First 2 parameters are the side of the controller.
+    #     # The last one is the duration of the vibration in miliseconds.
+    #     gamepad.set_vibration(1, 1, 300)
     if (event.code == "ABS_X"): # Turn the car
         send_turn_info(event.state)
     if (event.code == "ABS_RZ"): # Accelerate the car
