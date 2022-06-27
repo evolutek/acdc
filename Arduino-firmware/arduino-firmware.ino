@@ -32,11 +32,19 @@ enum command_e {
 bool status_pin_state = false;
 unsigned long last_status_pin_toggle;
 
+#define PDT_GAIN (510.0 / (150.0 + 510.0))
+
 #define PMW2_DIRECT 5
 #define PMW1_DIRECT 6
+#define LIMIT_PORT_DIRECT A1
+#define RRS_DIRECT 0.15
+#define CURRENT_LIMIT_DIRECT 2.5
 
 #define PMW2_PROP 9
 #define PMW1_PROP 10
+#define LIMIT_PORT_PROP A0
+#define RRS_PROP 0.15
+#define CURRENT_LIMIT_PROP 2.5
 uint8_t propulsionMaxSpeed = 100; 
 
 #define BATT_PIN A2
@@ -44,11 +52,18 @@ uint8_t propulsionMaxSpeed = 100;
 
 bool wasSetup = false;
 
+void setMotorCurrentLimit(bool isDirection, float current)
+{
+  float vRef = current * 10 * (isDirection ? RRS_DIRECT : RRS_PROP);
+  // FIXME : No analog out
+  analogWrite((isDirection ? LIMIT_PORT_DIRECT : LIMIT_PORT_PROP), min((vRef / PDT_GAIN) * 51, 255));
+}
+
 void setPropulsionSpeed(uint8_t reverse, uint8_t speed)
 {
   uint8_t newSpeed = speed / 100.0f * propulsionMaxSpeed;
   analogWrite((reverse ? PMW2_PROP : PMW1_PROP), map(newSpeed, 0, 100, 0, 255));
-  analogWrite((reverse ? PMW1_PROP : PMW2_PROP), map(newSpeed, 0, 100, 0, 255));
+  analogWrite((reverse ? PMW1_PROP : PMW2_PROP), 0);
 }
 
 void setup()
@@ -62,12 +77,18 @@ void setup()
 
   pinMode(PMW2_DIRECT, OUTPUT);
   pinMode(PMW1_DIRECT, OUTPUT);
+  pinMode(LIMIT_PORT_DIRECT, OUTPUT);
+  digitalWrite(LIMIT_PORT_DIRECT, HIGH);
+  //setMotorCurrentLimit(false, 2.5);
 
   pinMode(PMW2_PROP, OUTPUT);
   pinMode(PMW1_PROP, OUTPUT);
-  setPropulsionSpeed(false, 0);
+  pinMode(LIMIT_PORT_PROP, OUTPUT);
+  digitalWrite(LIMIT_PORT_PROP, HIGH);
+  //setMotorCurrentLimit(false, 2.5);
+  setPropulsionSpeed(true, 0);
   
-  Watchdog.enable(4000);
+  //Watchdog.enable(4000);
 }
 
 void process_command(void)
@@ -115,7 +136,7 @@ void process_command(void)
 
   if (frame[command] == get_batt_voltage)
   {
-    uint8_t voltage = max(map(analogRead(BATT_PIN), 0, 4095, 0, 5) * BATT_COEFF, 20);
+    uint8_t voltage = min(map(analogRead(BATT_PIN), 0, 4095, 0, 5) * BATT_COEFF, 20);
     Serial.print(FRAME_START_FLAG);
     Serial.print(_setup);
     Serial.print(0x01);
@@ -128,7 +149,8 @@ void loop()
   
   if (millis() - last_status_pin_toggle > (wasSetup ? STATUS_TOGGLE_DELAY : STATUS_TOGGLE_DELAY_BEFORE_RESET))
   {
-    status_pin_state != status_pin_state;
+    status_pin_state = !status_pin_state;
+    digitalWrite(STATUS_PIN, status_pin_state);
     last_status_pin_toggle = millis();
   }
 
