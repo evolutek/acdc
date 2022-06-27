@@ -40,7 +40,7 @@ class API:
         self.serial.write(self.packet)
         self.packet = bytearray()
 
-    def write(self, msg : CMD, cmd=None) -> Response | None:
+    def write(self, msg : CMD, cmd=None) -> Response:
         response = None
         if msg == CMD.RESET:
             self.reset()
