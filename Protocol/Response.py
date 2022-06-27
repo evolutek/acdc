@@ -11,10 +11,12 @@ class CmdEnum(IntEnum):
     SET_ANGLE = 0x04,
     BATTERY = 0x07,
 
-    class AllAngle(IntEnum):
-        CENTER = 0x00
-        LEFT = 0x01
-        RIGHT = 0x02
+    # all ANGLE
+    CENTER = 0x00
+    LEFT = 0x01
+    RIGHT = 0x02
+
+
 
 
 class Response:
