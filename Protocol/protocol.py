@@ -17,7 +17,7 @@ class API:
 
     def get_battery(self):
         self.packet.append(CMD.COMMAND_FLAG)
-        self.packet.append(CMD.RESET) # id command
+        self.packet.append(CMD.BATTERY) # id command
         self.packet.append(0x00)  # 0x00 == 0 parametre
         self.serial.write(self.packet)
         self.packet = bytearray()

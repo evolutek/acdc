@@ -7,7 +7,7 @@ class CMD(IntEnum):
     RESET = 0x00,
     SETUP = 0x01,
     PING = 0x02,
-    BATTERIE = 0x07,
+    BATTERY = 0x07,
 
 
 class Response:
