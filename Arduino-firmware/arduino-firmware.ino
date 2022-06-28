@@ -81,7 +81,6 @@ void setPropulsionSpeed(uint8_t reverse, uint8_t speed)
 
 void resetCommands()
 {
-  Serial.println("Resetting");
   setDirectionAngle(center);
   setPropulsionSpeed(false, 0);
 }
@@ -110,10 +109,8 @@ void setup()
 
 void process_command(void)
 {
-  if (frame[flag] != FRAME_START_FLAG || frame[command] > set_max_speed)
+  if (frame[flag] != FRAME_START_FLAG || frame[command] > get_batt_voltage)
     return;
-
-  Serial.println((int)frame[command]);
 
   if (frame[command] == reset)
   {
@@ -133,8 +130,6 @@ void process_command(void)
     Serial.print(_setup);
     Serial.println(0x00);
   }
-
-  Serial.print("Received command :");
 
   if (!wasSetup)
     return;
@@ -164,10 +159,10 @@ void process_command(void)
 
   if (frame[command] == set_max_speed)
   {
-    if (frame[data] < 1 || frame[data] > 100)
+    if (frame[size] < 1 || frame[data] > 100)
       return;
 
-    propulsionMaxSpeed = frame[data] & 0x64;
+    propulsionMaxSpeed = frame[data];
   }
 
   if (frame[command] == get_batt_voltage)
@@ -182,7 +177,6 @@ void process_command(void)
 
 void loop()
 {
-  
   if (millis() - last_status_pin_toggle > (wasSetup ? STATUS_TOGGLE_DELAY : STATUS_TOGGLE_DELAY_BEFORE_RESET))
   {
     status_pin_state = !status_pin_state;
@@ -201,13 +195,11 @@ void loop()
 
   if (Serial.available() > 0)
   {
-    frame[frame_index] = Serial.read();
-
-    frame_index++;
+    frame[frame_index++] = Serial.read();
     last_byte_received = millis();
   }
 
-  if (frame_index > size && frame_index + size > frame[size])
+  if (frame_index > size && frame_index - size > frame[size])
   {
     process_command();
     frame_index = 0;
