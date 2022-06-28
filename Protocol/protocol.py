@@ -61,6 +61,8 @@ class API:
             self.ping()
         elif msg == CmdEnum.SET_ANGLE:
             self.set_angle(param)
+        elif msg == CmdEnum.SET_ACC:
+            self.set_acc(param)
         return response
 
     def set_angle(self, param):
