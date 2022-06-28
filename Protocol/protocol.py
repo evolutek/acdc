@@ -44,7 +44,9 @@ class API:
         self.packet.append(CmdEnum.COMMAND_FLAG)
         self.packet.append(CmdEnum.SET_ACC)
         self.packet.append(0x01)
-        self.packet.append(vit << 8 | min(param[1], 100))
+        l = vit << 8 | min(param[1], 100)
+        print(f"voici ma vitesse: {param[1]}, et mon sens {param[0]}")
+        self.packet.append(l)
 
     def write(self, msg : CmdEnum, param=None) -> Response:
         response = None
