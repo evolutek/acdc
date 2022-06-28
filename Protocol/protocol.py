@@ -39,6 +39,13 @@ class API:
         self.serial.write(self.packet)
         self.packet = bytearray()
 
+    def set_acc(self, param: list):
+        vit = param[0]
+        self.packet.append(CmdEnum.COMMAND_FLAG)
+        self.packet.append(CmdEnum.SET_ACC)
+        self.packet.append(0x01)
+        self.packet.append(vit << 8 | min(param[1], 100))
+
     def write(self, msg : CmdEnum, param=None) -> Response:
         response = None
         if msg == CmdEnum.RESET:

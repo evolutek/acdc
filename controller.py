@@ -48,7 +48,7 @@ def analyse_input(event):
     func = {"BTN_START": event_start, "BTN_MODE": btn_mode, "ABS_HAT0X": btn_turn, "ABS_HAT0Y": btn_accelerate}
 
     if event.code in func and event.state == 1: # Exit the program if the HOME button is pressed
-        func[event.code]()
+        func[event.code](event.state)
     elif event.ev_type != "Sync": # Just to avoid the print of delimiter events
         print(f"TYPE : {event.ev_type}")
         print(f"CODE : {event.code}")

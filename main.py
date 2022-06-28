@@ -10,6 +10,8 @@ class Agent():
     def __init__(self):
         self.protocol = API()
         self.setup()
+        self.vit = 10
+        self.direction = 1
 
     def setup(self):
         response = self.protocol.write(CmdEnum.SETUP)
@@ -36,8 +38,12 @@ class Agent():
             self.protocol.write(CmdEnum.SET_ANGLE, CmdEnum.CENTER)
 
     def btn_accelerate(self, value: int):
-        print(f"Accelerating {value}")
-        # TODO : Set motor to value
+        self.vit = self.vit + 10 if self.vit < 100 else self.vit
+
+        if value > 0:
+            self.protocol.write(CmdEnum.SET_ACC, [0, self.vit])
+        if value < 1:
+            self.protocol.write(CmdEnum.SET_ACC, [1, self.vit])
 
     def btn_mode(self, event):
         print("Exiting Program ...")
@@ -57,6 +63,8 @@ class Agent():
             self.btn_turn(event.state)
         if event.code == "ABS_RZ":
             self.ping_cars(event.state)
+        if event.code == "ABS_HAT0Y":
+            self.btn_accelerate(event.state)
 
         elif event.ev_type != "Sync":  # Just to avoid the print of delimiter events
             print(f"TYPE : {event.ev_type}")

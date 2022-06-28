@@ -9,6 +9,7 @@ class CmdEnum(IntEnum):
     RESET = 0x00,
     SETUP = 0x01,
     PING = 0x02,
+    SET_ACC = 0x03,
     SET_ANGLE = 0x04,
     BATTERY = 0x07,
 
