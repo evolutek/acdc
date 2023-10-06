@@ -61,10 +61,10 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BATT_Pin GPIO_PIN_0
 #define BATT_GPIO_Port GPIOA
-#define LEDS_Pin GPIO_PIN_1
-#define LEDS_GPIO_Port GPIOA
 #define VCP_TX_Pin GPIO_PIN_2
 #define VCP_TX_GPIO_Port GPIOA
+#define LEDS_Pin GPIO_PIN_3
+#define LEDS_GPIO_Port GPIOA
 #define PROP_LIM_Pin GPIO_PIN_4
 #define PROP_LIM_GPIO_Port GPIOA
 #define DIR_LIM_Pin GPIO_PIN_5
@@ -89,10 +89,10 @@ void Error_Handler(void);
 #define PROP_IN1_GPIO_Port GPIOB
 #define PROP_IN2_Pin GPIO_PIN_5
 #define PROP_IN2_GPIO_Port GPIOB
-#define TRIGGER_Pin GPIO_PIN_6
-#define TRIGGER_GPIO_Port GPIOB
-#define ECHO_Pin GPIO_PIN_7
+#define ECHO_Pin GPIO_PIN_6
 #define ECHO_GPIO_Port GPIOB
+#define TRIGGER_Pin GPIO_PIN_7
+#define TRIGGER_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
