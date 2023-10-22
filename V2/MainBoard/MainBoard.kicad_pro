@@ -55,16 +55,7 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [
-        "courtyards_overlap|24475001|61349999|6d7f23dc-f648-4356-985c-e2b7890d1756|80ad5846-0ae2-47d7-bccb-4029a10eff1b",
-        "courtyards_overlap|24475001|70049999|5c76d831-ea38-473f-bb7d-0e3c012d1ab8|4fbd52b8-df23-4831-8207-0c15c1cce075",
-        "courtyards_overlap|47800001|59249999|e4adf90a-fb95-4bd6-bc5a-799d95243d91|41518794-5236-486d-a0a5-2653d880160f",
-        "courtyards_overlap|49770001|55979999|e4adf90a-fb95-4bd6-bc5a-799d95243d91|259bfa3a-5567-423f-880e-a539df3466dc",
-        "courtyards_overlap|49770001|59479999|e4adf90a-fb95-4bd6-bc5a-799d95243d91|d6ade3e0-d615-4240-85c8-a1eb27efe4aa",
-        "silk_edge_clearance|41507500|20000000|ca18257e-6ce6-4705-9516-073ffb41d5e7|21075d6e-d09a-405e-b350-a730cc0f2079",
-        "silk_edge_clearance|48507500|20000000|ca18257e-6ce6-4705-9516-073ffb41d5e7|8edea98a-03e6-46b1-9638-6c277841c5e0",
-        "silk_overlap|41940000|74192500|f314e1e0-e2d2-483c-a915-6e58af2a7ae6|1c5756da-9225-4181-b6eb-4235e920eaad"
-      ],
+      "drc_exclusions": [],
       "meta": {
         "version": 2
       },
@@ -418,7 +409,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "DevBoard.kicad_pro",
+    "filename": "MainBoard.kicad_pro",
     "version": 1
   },
   "net_settings": {
