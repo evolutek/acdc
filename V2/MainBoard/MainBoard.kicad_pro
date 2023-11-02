@@ -445,7 +445,7 @@
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
-      "step": "Output/DevBoard.step",
+      "step": "Output/MainBoard.step",
       "vrml": ""
     },
     "page_layout_descr_file": ""
