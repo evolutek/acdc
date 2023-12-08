@@ -64,7 +64,7 @@ class RpiCamera(Camera):
             raise Exception("Rpi camera not supported")
         self.framerate = framerate
         self.cap = Picamera2()
-        self.cap.configure(self.cap.create_preview_configuration(main={"format": 'BGR888', "size": resolution}))
+        self.cap.configure(self.cap.create_preview_configuration(main={"format": 'RGB888', "size": resolution}))
         self.cap.start()
         time.sleep(1)
 

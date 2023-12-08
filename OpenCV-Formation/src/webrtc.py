@@ -109,13 +109,36 @@ class WebRTCServer:
             )
         )
 
-    def run(self):
+    def run(self, stop_event: list[asyncio.Event]):
         app = web.Application()
         app.on_shutdown.append(self.on_shutdown)
         app.router.add_get("/", self.on_get_index)
         app.router.add_get("/client.js", self.on_get_client)
         app.router.add_post("/offer", self.on_offer)
-        web.run_app(app, host=self.host, port=self.port)
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        if stop_event is not None:
+            stop_event[0] = asyncio.Event()
+
+        runner = web.AppRunner(app)
+        loop.run_until_complete(runner.setup())
+
+        site = web.TCPSite(runner, self.host, self.port)
+        loop.run_until_complete(site.start())
+
+        #web.run_app(app, host=self.host, port=self.port)
+
+        if stop_event is not None and stop_event[0] is not None:
+            self.stop_event = stop_event
+            loop.run_until_complete(self.wait_until_done())
+            loop.close()
+        else:
+            loop.run_forever()
+
+    async def wait_until_done(self):
+        await self.stop_event[0].wait()
 
 
 if __name__ == "__main__":
