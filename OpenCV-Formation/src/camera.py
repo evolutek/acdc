@@ -1,7 +1,7 @@
 import numpy as np
 import time
 
-SUPPORT_RPI_CAMERA = True
+SUPPORT_RPI_CAMERA = False
 SUPPORT_CV_CAMERA = True
 
 if SUPPORT_CV_CAMERA:

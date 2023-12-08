@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
-from webrtc import *
 from camera import *
 from detection import detect
 
 import cv2 as cv
 import sys
 from threading import Thread
-import asyncio
 import traceback
 
 
@@ -15,8 +13,7 @@ import traceback
 FPS = 24
 RESOLUTION = (640, 480)
 
-WEBRTC_SERVER = True
-OPENCV_WINDOW = False
+OPENCV_WINDOW = True
 
 
 def error(*args, code = None, **kargs):
@@ -25,7 +22,7 @@ def error(*args, code = None, **kargs):
         exit(code)
 
 
-class MyVideoProvider(VideoProvider):
+class MyVideoProvider():
     def init(self):
         self.frame = None
 
@@ -53,22 +50,11 @@ class MyVideoProvider(VideoProvider):
 end = False
 
 
-def webrtc_thr_func(video_provider: VideoProvider, stop_event: list[asyncio.Event]):
-    webrtc_server = WebRTCServer()
-    webrtc_server.set_video_provider(video_provider)
-    webrtc_server.run(None)
-
-
 def main():
     global end
     end = False
-    stop_event = [None]
 
     video_provider = MyVideoProvider()
-
-    if WEBRTC_SERVER:
-        webrtc_thr = Thread(target = webrtc_thr_func, args = [video_provider, stop_event])
-        webrtc_thr.start()
 
     try:
         capture = get_best_camera(FPS, RESOLUTION)
@@ -86,11 +72,6 @@ def main():
     capture.close()
 
     end = True
-
-    if WEBRTC_SERVER:
-        if stop_event[0] is not None:
-            stop_event[0].set()
-        webrtc_thr.join()
 
 
 if __name__ == "__main__":
