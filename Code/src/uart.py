@@ -2,7 +2,6 @@ import serial
 import serial.tools.list_ports
 import sys
 import glob
-import time
 
 
 class SerialDevice:
@@ -45,15 +44,13 @@ class HardwareSerialDeviceInfo:
 
 class HardwareSerialDevice(SerialDevice):
     def __init__(self, info: HardwareSerialDeviceInfo, baudrate: int) -> None:
-        self.device = serial.Serial(info.device, baudrate=baudrate, stopbits=1, parity=serial.PARITY_NONE, bytesize=8)
+        self.device = serial.Serial(info.device, baudrate=baudrate, stopbits=1, parity=serial.PARITY_ODD, bytesize=8)
         self.info = info
         self.baudrate = baudrate
 
     def write(self, data: bytes) -> None:
-        for c in data:
-            self.device.write(bytes([c]))
-            self.device.flush()
-            time.sleep(0.01)
+        self.device.write(data)
+        self.device.flush()
         print(data.hex(), end='\r\n', flush=True)
 
     def read(self, size: int) -> bytes:

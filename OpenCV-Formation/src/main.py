@@ -4,6 +4,7 @@ from camera import *
 from detection import detect
 
 import cv2 as cv
+
 import sys
 from threading import Thread
 import traceback

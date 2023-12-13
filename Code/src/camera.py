@@ -1,8 +1,10 @@
 import numpy as np
 import time
 
+
 SUPPORT_RPI_CAMERA = True
 SUPPORT_CV_CAMERA = True
+
 
 if SUPPORT_CV_CAMERA:
     import cv2 as cv

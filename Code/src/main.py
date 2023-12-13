@@ -1,36 +1,26 @@
 #!/usr/bin/env python3
 
 from fps import *
-from detection import *
 from webrtc import *
 from uart import *
 from camera import *
+from utils import *
+from controler import loop
 
 import cv2 as cv
 import sys
 from threading import Thread
+import asyncio
 
 
 # General configurations
 FPS = 24
 
 WEBRTC_SERVER = True
-OPENCV_WINDOW = False
+OPENCV_WINDOW = True
 DRY_RUN = True # Do not use serial and print instructions to console
 
-SERIAL_BAUDRATE = 38400
-
-SCALEDOWN_LEVEL = 0
-
-MIN_SHAPE_AREA = 300
-
-RED_COLOR_RANGE = ColorRange(
-    (350, 100, 100), (340, 45, 40), (10, 100, 100), (0, 0, 255)
-)
-
-GREEN_COLOR_RANGE = ColorRange(
-    (150, 100, 100), (120, 20, 15), (170, 100, 100), (0, 255, 0)
-)
+SERIAL_BAUDRATE = 115200
 
 
 def error(*args, code = None, **kargs):
@@ -39,103 +29,13 @@ def error(*args, code = None, **kargs):
         exit(code)
 
 
-class MyVideoProvider(VideoProvider):
-    def init(self):
-        self.frame = None
-
-    def set_frame(self, frame):
-        self.frame = frame
-
-    def read(self):
-        return self.frame
-
-
-end = False
-
-
-def find_best_splash(splashs: ColorSplashList, color: ColorRange) -> ColorSpash:
-    best_splash = None
-    for splash in splashs.splashs:
-        if splash.color == color:
-            if best_splash is None or splash.area > best_splash.area:
-                best_splash = splash
-    return best_splash
-
-
-def float_point_to_int(point: tuple[float,float]) -> tuple[int,int]:
-    return (int(point[0] + 0.5), int(point[1] + 0.5))
-
-
-def processing(video_provider: VideoProvider, serial: SerialDevice) -> None:
-    try:
-        cap = get_best_camera(FPS)
-        print("Camera stream successfuly opened (type: %s)" % cap.get_type())
-    except Exception as e:
-        error(str(e), code = 2)
-
-    detector = ColorSplashDetection()
-    detector.colors.append(RED_COLOR_RANGE)
-    detector.colors.append(GREEN_COLOR_RANGE)
-    detector.scaledown_level = SCALEDOWN_LEVEL
-    detector.min_area = MIN_SHAPE_AREA
-
-    fps_controler = FrameRateControler(FPS)
-
-    try:
-        last_fps = 0
-        while not end:
-            fps_controler.begin_frame()
-
-            frame = cap.read()
-            if frame is None:
-                error("Failed to retreive frame")
-                break
-
-            splashs = detector.detect(frame)
-            splashs.render(frame)
-
-            best_green_splash = find_best_splash(splashs, GREEN_COLOR_RANGE)
-            best_red_splash = find_best_splash(splashs, RED_COLOR_RANGE)
-
-            if best_green_splash is not None and best_red_splash is not None:
-                cv.line(
-                    frame,
-                    float_point_to_int(best_green_splash.centroid),
-                    float_point_to_int(best_red_splash.centroid),
-                    (255, 0, 0), 1
-                )
-
-            video_provider.set_frame(frame)
-
-            if OPENCV_WINDOW:
-                cv.imshow("Camera", frame)
-
-            fps = fps_controler.get_fps()
-            if fps != last_fps:
-                last_fps = fps
-                print("FPS: %i" % int(fps + 0.5))
-
-            wait = fps_controler.get_time_to_wait()
-
-            if OPENCV_WINDOW:
-                if cv.waitKey(max(2, int(wait * 1000))) == ord('q'):
-                    break
-                #if cv.getWindowProperty("Camera", cv.WND_PROP_VISIBLE) < 1:
-                #    break
-            else:
-                time.sleep(wait)
-
-            fps_controler.end_frame()
-    except KeyboardInterrupt:
-        pass
-
-    cap.close()
+def webrtc_thr_func(video_provider: VideoProvider, stop_event: list[asyncio.Event]):
+    webrtc_server = WebRTCServer()
+    webrtc_server.set_video_provider(video_provider)
+    webrtc_server.run(stop_event)
 
 
 def main():
-    global end
-    end = False
-
     if not DRY_RUN:
         serials = list_serials()
         if len(serials) == 0:
@@ -152,26 +52,58 @@ def main():
     else:
         serial = StreamSerialDevice()
 
-    video_provider = MyVideoProvider()
+    video_provider = MemoryVideoProvider()
 
+    webrtc_thr = None
+    stop_event = [False]
     if WEBRTC_SERVER:
-        webrtc_server = WebRTCServer()
-        webrtc_server.set_video_provider(video_provider)
+        webrtc_thr = Thread(target = webrtc_thr_func, args = [video_provider, stop_event])
+        webrtc_thr.start()
 
-    processing_thr = Thread(target = processing, args = [video_provider, serial])
-    processing_thr.start()
+    try:
+        cap = get_best_camera(FPS)
+        print("Camera stream successfuly opened (type: %s)" % cap.get_type())
+    except Exception as e:
+        error(str(e), code = 2)
 
-    if WEBRTC_SERVER:
-        webrtc_server.run()
-    else:
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            pass
+    try:
+        fps_controler = FrameRateControler(FPS)
+        last_fps = 0
 
-    end = True
-    processing_thr.join()
+        while True:
+            fps_controler.begin_frame()
+
+            if loop(cap, video_provider, serial):
+                break
+
+            if OPENCV_WINDOW:
+                cv.imshow("Camera", video_provider.read())
+
+            fps = fps_controler.get_fps()
+            if fps != last_fps:
+                last_fps = fps
+                print("FPS: %i" % int(fps + 0.5))
+
+            wait = fps_controler.get_time_to_wait()
+
+            if OPENCV_WINDOW:
+                if cv.waitKey(max(2, int(wait * 1000))) == ord('q'):
+                    break
+                if cv.getWindowProperty("Camera", cv.WND_PROP_VISIBLE) < 1:
+                    break
+            else:
+                time.sleep(wait)
+
+            fps_controler.end_frame()
+
+    except KeyboardInterrupt:
+        pass
+
+    cap.close()
+
+    if webrtc_thr is not None:
+        stop_event[0] = True
+        webrtc_thr.join()
 
 
 if __name__ == "__main__":

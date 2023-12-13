@@ -8,3 +8,6 @@ python -m venv --system-site-packages venv
 pip install -r requirements.txt
 exit
 libcamera-hello --list-cameras
+
+If you are under Wayland run:
+export QT_QPA_PLATFORM=xcb

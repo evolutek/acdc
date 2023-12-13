@@ -6,6 +6,8 @@ import json
 from av import VideoFrame
 import cv2 as cv
 
+from utils import VideoProvider
+
 
 def read_file(filename: str) -> str:
     with open(filename, "r", encoding="utf8") as f:
@@ -14,11 +16,6 @@ def read_file(filename: str) -> str:
 
 
 ASSETS_DIR = os.path.join(os.path.dirname(__file__), ".." + os.sep + "assets/webrtc")
-
-
-class VideoProvider:
-    def read(self):
-        raise NotImplementedError("VideoProvider.read()")
 
 
 class ModularVideoStreamTrack(VideoStreamTrack):
@@ -109,16 +106,44 @@ class WebRTCServer:
             )
         )
 
-    def run(self):
-        app = web.Application()
-        app.on_shutdown.append(self.on_shutdown)
-        app.router.add_get("/", self.on_get_index)
-        app.router.add_get("/client.js", self.on_get_client)
-        app.router.add_post("/offer", self.on_offer)
-        web.run_app(app, host=self.host, port=self.port)
+    def run(self, stop_event: list[asyncio.Event]):
+        self.app = web.Application()
+        self.app.on_shutdown.append(self.on_shutdown)
+        self.app.router.add_get("/", self.on_get_index)
+        self.app.router.add_get("/client.js", self.on_get_client)
+        self.app.router.add_post("/offer", self.on_offer)
+
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+
+        if stop_event is not None:
+            stop_event[0] = False
+            self.stop_event = stop_event
+
+        self.runner = web.AppRunner(self.app)
+        self.loop.run_until_complete(self.runner.setup())
+
+        self.site = web.TCPSite(self.runner, self.host, self.port)
+        self.loop.run_until_complete(self.site.start())
+
+        if stop_event is not None:
+            self.loop.run_until_complete(self.wait_until_done())
+            self.loop.close()
+        else:
+            self.loop.run_forever()
+
+    async def close(self):
+        await self.site.stop()
+        await self.runner.cleanup()
+        await self.app.cleanup()
+
+    async def wait_until_done(self):
+        while not self.stop_event[0]:
+            await asyncio.sleep(0.1)
+        await self.close()
 
 
 if __name__ == "__main__":
     server = WebRTCServer()
     server.set_video_provider(OpenCVVideoProvider())
-    server.run()
+    server.run(None)
