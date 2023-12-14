@@ -5,22 +5,13 @@ from webrtc import *
 from uart import *
 from camera import *
 from utils import *
+from config import *
 from controler import loop
 
 import cv2 as cv
 import sys
 from threading import Thread
 import asyncio
-
-
-# General configurations
-FPS = 24
-
-WEBRTC_SERVER = True
-OPENCV_WINDOW = True
-DRY_RUN = True # Do not use serial and print instructions to console
-
-SERIAL_BAUDRATE = 115200
 
 
 def error(*args, code = None, **kargs):
@@ -36,7 +27,7 @@ def webrtc_thr_func(video_provider: VideoProvider, stop_event: list[asyncio.Even
 
 
 def main():
-    if not DRY_RUN:
+    if not SERIAL_DRY_RUN:
         serials = list_serials()
         if len(serials) == 0:
             error("No serial device found", code = 1)
@@ -52,12 +43,13 @@ def main():
     else:
         serial = StreamSerialDevice()
 
-    video_provider = MemoryVideoProvider()
+    video_input  = MemoryVideoProvider()
+    video_output = MemoryVideoProvider()
 
     webrtc_thr = None
     stop_event = [False]
     if WEBRTC_SERVER:
-        webrtc_thr = Thread(target = webrtc_thr_func, args = [video_provider, stop_event])
+        webrtc_thr = Thread(target = webrtc_thr_func, args = [video_output, stop_event])
         webrtc_thr.start()
 
     try:
@@ -68,21 +60,23 @@ def main():
 
     try:
         fps_controler = FrameRateControler(FPS)
-        last_fps = 0
+        frame_counter = 0
 
         while True:
             fps_controler.begin_frame()
 
-            if loop(cap, video_provider, serial):
+            video_input.write(cap.read())
+
+            if loop(video_input, video_output, serial):
                 break
 
             if OPENCV_WINDOW:
-                cv.imshow("Camera", video_provider.read())
+                cv.imshow("Camera", video_output.read())
 
-            fps = fps_controler.get_fps()
-            if fps != last_fps:
-                last_fps = fps
-                print("FPS: %i" % int(fps + 0.5))
+            frame_counter += 1
+            if frame_counter >= FPS:
+                print("FPS: %i" % int(fps_controler.get_fps() + 0.5))
+                frame_counter = 0
 
             wait = fps_controler.get_time_to_wait()
 

@@ -1,5 +1,4 @@
 from detection import *
-from camera import Camera
 from utils import MemoryVideoProvider
 from uart import SerialDevice
 
@@ -37,7 +36,15 @@ def float_point_to_int(point: tuple[float,float]) -> tuple[int,int]:
     return (int(point[0] + 0.5), int(point[1] + 0.5))
 
 
-def loop(input_video: Camera, output_video: MemoryVideoProvider, serial: SerialDevice):
+from driver import CarDriver
+
+driver = None
+
+
+def loop(input_video: MemoryVideoProvider, output_video: MemoryVideoProvider, serial: SerialDevice):
+    if driver is None:
+        driver = CarDriver(serial)
+
     frame = input_video.read()
     if frame is None:
         return True
@@ -55,6 +62,22 @@ def loop(input_video: Camera, output_video: MemoryVideoProvider, serial: SerialD
             float_point_to_int(best_red_splash.centroid),
             (255, 0, 0), 1
         )
+
+        middle_x = (best_green_splash.centroid[0] + best_red_splash.centroid[0]) / 2
+        width = frame.size[1]
+
+        if middle_x < width * 0.4:
+            driver.turn(1)
+        elif middle_x > width * 0.6:
+            driver.turn(1)
+        else:
+            driver.turn(0)
+
+        driver.move(0.7)
+
+    else:
+        driver.brake()
+
 
     output_video.write(frame)
 
