@@ -151,19 +151,15 @@ class CarDriver:
 
     def move(self, speed: float):
         raw_speed = int(max(0, min(1, abs(speed))) * 0xFF)
-        if raw_speed == 0:
-            self.turn(0)
         if speed < 0:
             self.serial.send_cmd(ord('K'), struct.pack("B", raw_speed))
         else:
             self.serial.send_cmd(ord('F'), struct.pack("B", raw_speed))
 
     def brake(self):
-        self.turn(0)
         self.serial.send_cmd(ord('B'))
 
     def freewheel(self):
-        self.turn(0)
         self.serial.send_cmd(ord('S'))
 
     def close(self):

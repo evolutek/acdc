@@ -42,12 +42,15 @@ driver = None
 
 
 def loop(input_video: MemoryVideoProvider, output_video: MemoryVideoProvider, serial: SerialDevice):
+    global driver
     if driver is None:
         driver = CarDriver(serial)
 
     frame = input_video.read()
     if frame is None:
         return True
+
+    width = frame.shape[1]
 
     splashs = detector.detect(frame)
     splashs.render(frame)
@@ -64,16 +67,15 @@ def loop(input_video: MemoryVideoProvider, output_video: MemoryVideoProvider, se
         )
 
         middle_x = (best_green_splash.centroid[0] + best_red_splash.centroid[0]) / 2
-        width = frame.size[1]
 
-        if middle_x < width * 0.4:
-            driver.turn(1)
-        elif middle_x > width * 0.6:
+        if middle_x < width * 0.35:
+            driver.turn(-1)
+        elif middle_x > width * 0.65:
             driver.turn(1)
         else:
             driver.turn(0)
 
-        driver.move(0.7)
+        driver.move(0.5)
 
     else:
         driver.brake()

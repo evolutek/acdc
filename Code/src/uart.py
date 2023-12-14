@@ -44,7 +44,7 @@ class HardwareSerialDeviceInfo:
 
 class HardwareSerialDevice(SerialDevice):
     def __init__(self, info: HardwareSerialDeviceInfo, baudrate: int) -> None:
-        self.device = serial.Serial(info.device, baudrate=baudrate, stopbits=1, parity=serial.PARITY_ODD, bytesize=8)
+        self.device = serial.Serial(info.device, baudrate=baudrate, stopbits=1, parity=serial.PARITY_NONE, bytesize=8)
         self.info = info
         self.baudrate = baudrate
 
@@ -56,8 +56,12 @@ class HardwareSerialDevice(SerialDevice):
     def read(self, size: int) -> bytes:
         return self.device.read(size)
 
-    def __del__(self) -> None:
-        self.device.close()
+    def __del__(self):
+        try:
+            if self.device is not None:
+                self.device.close()
+        except AttributeError:
+            pass
 
 
 def _list_serials():
