@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+print("Begin imports ...")
+
 from fps import *
 from webrtc import *
 from uart import *
@@ -13,6 +15,8 @@ import sys
 from threading import Thread
 import asyncio
 
+print("Import finish")
+
 
 def error(*args, code = None, **kargs):
     print(*args, **kargs, file = sys.stderr, flush = True)
@@ -21,6 +25,7 @@ def error(*args, code = None, **kargs):
 
 
 def webrtc_thr_func(video_provider: VideoProvider, stop_event: list[asyncio.Event]):
+    print("Starting WebRTC server ...")
     webrtc_server = WebRTCServer()
     webrtc_server.set_video_provider(video_provider)
     webrtc_server.run(stop_event)
@@ -28,6 +33,7 @@ def webrtc_thr_func(video_provider: VideoProvider, stop_event: list[asyncio.Even
 
 def main():
     if not SERIAL_DRY_RUN:
+        print("Begin serials ports listing ...")
         serials = list_serials()
         if len(serials) == 0:
             error("No serial device found", code = 1)
@@ -53,8 +59,9 @@ def main():
         webrtc_thr.start()
 
     try:
+        print("Begin camera connection ...")
         cap = get_best_camera(FPS)
-        print("Camera stream successfuly opened (type: %s)" % cap.get_type())
+        print("Camera stream opened (type: %s)" % cap.get_type())
     except Exception as e:
         error(str(e), code = 2)
 

@@ -13,7 +13,7 @@ if [ "$QT_QPA_PLATFORM" = "wayland" ]; then
     export QT_QPA_PLATFORM=xcb
 fi
 
-sudo bash -c ". ./venv/bin/activate; python "$filename""
+bash -c ". ./venv/bin/activate; python "$filename""
 r=$?
 
 exit $r
