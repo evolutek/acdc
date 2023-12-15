@@ -6,7 +6,7 @@ from uart import *
 from camera import *
 from utils import *
 from config import *
-from controler import loop
+from controller import loop, setup
 
 import cv2 as cv
 import sys
@@ -61,6 +61,8 @@ def main():
     try:
         fps_controler = FrameRateControler(FPS)
         frame_counter = 0
+
+        setup(video_input, video_output, serial)
 
         while True:
             fps_controler.begin_frame()

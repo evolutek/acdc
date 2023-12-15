@@ -41,6 +41,10 @@ from driver import CarDriver
 driver = None
 
 
+def setup(input_video: MemoryVideoProvider, output_video: MemoryVideoProvider, serial: SerialDevice):
+    pass
+
+
 def loop(input_video: MemoryVideoProvider, output_video: MemoryVideoProvider, serial: SerialDevice):
     global driver
     if driver is None:

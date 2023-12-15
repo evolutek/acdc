@@ -165,4 +165,5 @@ class CarDriver:
     def close(self):
         self.end = True
         self.freewheel()
+        self.turn(0)
         self.heartbeats_thr.join()
