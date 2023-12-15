@@ -36,54 +36,17 @@ def float_point_to_int(point: tuple[float,float]) -> tuple[int,int]:
     return (int(point[0] + 0.5), int(point[1] + 0.5))
 
 
-from driver import CarDriver
-
-driver = None
-
-
 def setup(input_video: MemoryVideoProvider, output_video: MemoryVideoProvider, serial: SerialDevice):
     pass
 
 
 def loop(input_video: MemoryVideoProvider, output_video: MemoryVideoProvider, serial: SerialDevice):
-    global driver
-    if driver is None:
-        driver = CarDriver(serial)
-
     frame = input_video.read()
     if frame is None:
         return True
 
-    width = frame.shape[1]
-
     splashs = detector.detect(frame)
     splashs.render(frame)
-
-    best_green_splash = find_best_splash(splashs, GREEN_COLOR_RANGE)
-    best_red_splash = find_best_splash(splashs, RED_COLOR_RANGE)
-
-    if best_green_splash is not None and best_red_splash is not None:
-        cv.line(
-            frame,
-            float_point_to_int(best_green_splash.centroid),
-            float_point_to_int(best_red_splash.centroid),
-            (255, 0, 0), 1
-        )
-
-        middle_x = (best_green_splash.centroid[0] + best_red_splash.centroid[0]) / 2
-
-        if middle_x < width * 0.35:
-            driver.turn(-1)
-        elif middle_x > width * 0.65:
-            driver.turn(1)
-        else:
-            driver.turn(0)
-
-        driver.move(0.5)
-
-    else:
-        driver.brake()
-
 
     output_video.write(frame)
 
