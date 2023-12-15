@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>ACDC remote controller</title>
+        <meta name="description" content="A remote controller for ACDC cars">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body onload="setup()">
+        <div id="status_txt">...</div>
+
+        <input type="text" id="ip_input" placeholder="IP"  pattern="[0-9]+([0-9]+\.){3}" onkeydown="keypressed(this, event)">
+        <button id="connect_btn" onclick="connect()">Connect</button>
+
+        <div id="controls">
+            <div id="pad">
+                <div id="pad_center">
+                    <div id="pad_handle"></div>
+                </div>
+            </div>
+        </div>
+
+        <script src="client.js"></script>
+    </body>
+</html>
