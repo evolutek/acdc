@@ -29,7 +29,7 @@ DD_BS="$((32 * 1024))" # In bytes
 
 title "Writing image to disk"
 
-#xz --stdout --decompress "$img_filename" | dd of=$dst_dev status=progress bs=$DD_BS || error
+xz --stdout --decompress "$img_filename" | dd of=$dst_dev status=progress bs=$DD_BS || error
 lsblk
 
 # title "Writing new random disk id"
