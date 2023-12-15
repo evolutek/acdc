@@ -59,6 +59,9 @@ def loop(input_video: MemoryVideoProvider, output_video: MemoryVideoProvider, se
         # splash.color : Qui est à soit RED_COLOR_RANGE ou à GREEN_COLOR_RANGE
         pass
 
+    # serial.write(bytes([0xA0, 0xBB])) : Ecries des octets sur le serial
+    # serial.read(10) : Lis au maximum 10 octets depuis le serial (return un "bytes")
+
     output_video.write(frame)
 
     return False
