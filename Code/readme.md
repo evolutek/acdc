@@ -1,3 +1,5 @@
+Setup commands:
+```sh
 sudo -i
 cd /path/to/project
 apt install -y python3-opencv
@@ -8,6 +10,9 @@ python -m venv --system-site-packages venv
 pip install -r requirements.txt
 exit
 libcamera-hello --list-cameras
+```
 
 If you are under Wayland run:
+```sh
 export QT_QPA_PLATFORM=xcb
+```
