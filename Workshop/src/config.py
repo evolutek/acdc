@@ -10,7 +10,7 @@ def has_graphic():
 FPS = 12
 
 WEBRTC_SERVER = True
-OPENCV_WINDOW = has_graphic()
+OPENCV_WINDOW = False
 
 SERIAL_DRY_RUN = False # Do not use serial and print instructions to console
 SERIAL_BAUDRATE = 115200
